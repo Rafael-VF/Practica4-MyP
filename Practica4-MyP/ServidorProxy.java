@@ -2,61 +2,41 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 /**
- * Proxy que controla el acceso al servidor de impresión real, validando los
- * permisos de impresión de los empleados.
+ * Proxy para manejar la validación de permisos antes de imprimir
  */
 public class ServidorProxy implements ServidorImpresion {
     private ServidorReal servidorReal;
-    private Queue<Documento> colaImpresion;
+    private Queue<Documento> colaImpresion = new LinkedList<>();
 
-    /**
-     * Constructor que inicializa el proxy con un servidor real.
-     * 
-     * @param servidorReal el servidor real de impresión.
-     */
     public ServidorProxy(ServidorReal servidorReal) {
         this.servidorReal = servidorReal;
-        this.colaImpresion = new LinkedList<>();
     }
 
     /**
-     * Agrega un documento a la cola de impresión después de validar las credenciales
-     * del empleado.
-     * 
-     * @param empleado  el empleado que solicita la impresión.
-     * @param documento el documento que se desea imprimir.
+     * Método para agregar una solicitud de impresión si el empleado tiene permisos.
      */
     public void agregarImpresion(Empleado empleado, Documento documento) {
         if (validarCredencial(empleado, documento)) {
-            colaImpresion.add(documento);
+            System.out.println("Solicitud aceptada para " + empleado.getNombre());
             procesarImpresion(documento);
         } else {
-            System.out.println("El empleado " + empleado.getNombre() + " no tiene permisos para imprimir a color.");
+            System.out.println("Permiso denegado para imprimir a color");
         }
     }
 
     /**
-     * Valida si el empleado tiene los permisos necesarios para imprimir.
-     * 
-     * @param empleado  el empleado que solicita la impresión.
-     * @param documento el documento que se desea imprimir.
-     * @return true si el empleado tiene los permisos necesarios, false en caso
-     *         contrario.
+     * Validar si el empleado puede imprimir a color.
      */
-    private boolean validarCredencial(Empleado empleado, Documento documento) {
-        if (documento.getAColor()) {
-            return empleado.puedeImprimirColor();
+    public boolean validarCredencial(Empleado empleado, Documento documento) {
+        if (documento.getAColor() && !empleado.puedeImprimirColor()) {
+            return false;
         }
         return true;
     }
 
-    /**
-     * Procesa la impresión delegando al servidor real.
-     * 
-     * @param documento el documento a ser impreso.
-     */
     @Override
     public void procesarImpresion(Documento documento) {
+        // Enviar el documento a través del servidor real
         servidorReal.procesarImpresion(documento);
     }
 }
